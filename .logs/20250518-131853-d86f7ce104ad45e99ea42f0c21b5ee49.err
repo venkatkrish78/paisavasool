@@ -1,0 +1,77 @@
+
+
+===== TS errors =====
+
+[Test Mode] ./components/price-comparison.tsx:224:9
+Type error: Variable 'mostRecent' implicitly has type 'any' in some locations where its type cannot be determined.
+
+[0m [90m 222 |[39m   [90m// Get the last updated time for all prices[39m[0m
+[0m [90m 223 |[39m   [36mconst[39m getLastUpdated [33m=[39m () [33m=>[39m {[0m
+[0m[31m[1m>[22m[39m[90m 224 |[39m     [36mlet[39m mostRecent [33m=[39m [36mnull[39m[33m;[39m[0m
+[0m [90m     |[39m         [31m[1m^[22m[39m[0m
+[0m [90m 225 |[39m     [0m
+[0m [90m 226 |[39m     items[33m.[39mforEach(item [33m=>[39m {[0m
+[0m [90m 227 |[39m       item[33m.[39mprices[33m.[39mforEach(price [33m=>[39m {[0m
+
+[Test Mode] ./components/price-comparison.tsx:229:14
+Type error: Variable 'mostRecent' implicitly has an 'any' type.
+
+[0m [90m 227 |[39m       item[33m.[39mprices[33m.[39mforEach(price [33m=>[39m {[0m
+[0m [90m 228 |[39m         [36mconst[39m priceDate [33m=[39m [36mnew[39m [33mDate[39m(price[33m.[39mlastUpdated)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 229 |[39m         [36mif[39m ([33m![39mmostRecent [33m||[39m priceDate [33m>[39m mostRecent) {[0m
+[0m [90m     |[39m              [31m[1m^[22m[39m[0m
+[0m [90m 230 |[39m           mostRecent [33m=[39m priceDate[33m;[39m[0m
+[0m [90m 231 |[39m         }[0m
+[0m [90m 232 |[39m       })[33m;[39m[0m
+
+[Test Mode] ./components/shopping-list-items.tsx:162:38
+Type error: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: ItemPrice, currentValue: ItemPrice, currentIndex: number, array: ItemPrice[]) => ItemPrice, initialValue: ItemPrice): ItemPrice', gave the following error.
+    Argument of type '(latest: null, current: ItemPrice) => string | null' is not assignable to parameter of type '(previousValue: ItemPrice, currentValue: ItemPrice, currentIndex: number, array: ItemPrice[]) => ItemPrice'.
+      Types of parameters 'latest' and 'previousValue' are incompatible.
+        Type 'ItemPrice' is not assignable to type 'null'.
+  Overload 2 of 3, '(callbackfn: (previousValue: null, currentValue: ItemPrice, currentIndex: number, array: ItemPrice[]) => null, initialValue: null): null', gave the following error.
+    Argument of type '(latest: null, current: ItemPrice) => string | null' is not assignable to parameter of type '(previousValue: null, currentValue: ItemPrice, currentIndex: number, array: ItemPrice[]) => null'.
+      Type 'string | null' is not assignable to type 'null'.
+        Type 'string' is not assignable to type 'null'.
+
+[0m [90m 160 |[39m     [0m
+[0m [90m 161 |[39m     [90m// Find the most recent update[39m[0m
+[0m[31m[1m>[22m[39m[90m 162 |[39m     [36mconst[39m mostRecent [33m=[39m prices[33m.[39mreduce((latest[33m,[39m current) [33m=>[39m {[0m
+[0m [90m     |[39m                                      [31m[1m^[22m[39m[0m
+[0m [90m 163 |[39m       [36mconst[39m currentDate [33m=[39m [36mnew[39m [33mDate[39m(current[33m.[39mlastUpdated)[33m;[39m[0m
+[0m [90m 164 |[39m       [36mconst[39m latestDate [33m=[39m latest [33m?[39m [36mnew[39m [33mDate[39m(latest) [33m:[39m [36mnew[39m [33mDate[39m([35m0[39m)[33m;[39m[0m
+[0m [90m 165 |[39m       [36mreturn[39m currentDate [33m>[39m latestDate [33m?[39m current[33m.[39mlastUpdated [33m:[39m latest[33m;[39m[0m
+
+[Test Mode] ./components/shopping-list-items.tsx:170:41
+Type error: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'ItemPrice' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'ItemPrice' is not assignable to parameter of type 'string | number'.
+
+[0m [90m 168 |[39m     [36mif[39m ([33m![39mmostRecent) [36mreturn[39m [32m"Never"[39m[33m;[39m[0m
+[0m [90m 169 |[39m     [0m
+[0m[31m[1m>[22m[39m[90m 170 |[39m     [36mreturn[39m formatDistanceToNow([36mnew[39m [33mDate[39m(mostRecent)[33m,[39m { addSuffix[33m:[39m [36mtrue[39m })[33m;[39m[0m
+[0m [90m     |[39m                                         [31m[1m^[22m[39m[0m
+[0m [90m 171 |[39m   }[0m
+[0m [90m 172 |[39m[0m
+[0m [90m 173 |[39m   [36mif[39m (isLoading) {[0m
+
+===== TS errors =====
+
+
+Failed to compile.
+
+./components/price-comparison.tsx:224:9
+Type error: Variable 'mostRecent' implicitly has type 'any' in some locations where its type cannot be determined.
+
+[0m [90m 222 |[39m   [90m// Get the last updated time for all prices[39m[0m
+[0m [90m 223 |[39m   [36mconst[39m getLastUpdated [33m=[39m () [33m=>[39m {[0m
+[0m[31m[1m>[22m[39m[90m 224 |[39m     [36mlet[39m mostRecent [33m=[39m [36mnull[39m[33m;[39m[0m
+[0m [90m     |[39m         [31m[1m^[22m[39m[0m
+[0m [90m 225 |[39m     [0m
+[0m [90m 226 |[39m     items[33m.[39mforEach(item [33m=>[39m {[0m
+[0m [90m 227 |[39m       item[33m.[39mprices[33m.[39mforEach(price [33m=>[39m {[0m
+Next.js build worker exited with code: 1 and signal: null
+error Command failed with exit code 1.

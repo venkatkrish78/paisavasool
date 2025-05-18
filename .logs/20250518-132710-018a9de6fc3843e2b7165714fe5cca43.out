@@ -1,0 +1,8 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "f76f9f866", schema "public" at "db-f76f9f866.db001.hosteddb.reai.io:5432"
+
+1 migration found in prisma/migrations
+
+
+No pending migrations to apply.

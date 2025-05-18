@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Package, Trash2, RefreshCw, ShoppingCart, ExternalLink, Plus } from 'lucide-react'
+import { Package, Trash2, RefreshCw, ShoppingCart, ExternalLink, Plus, Clock } from 'lucide-react'
 import { useInView } from 'react-intersection-observer'
 import { useToast } from '@/components/ui/use-toast'
+import { formatDistanceToNow } from 'date-fns'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,6 +30,7 @@ interface ItemPrice {
   available: boolean
   productName: string | null
   imageUrl: string | null
+  lastUpdated: string
 }
 
 interface ShoppingListItemsProps {
@@ -47,6 +50,7 @@ export function ShoppingListItems({ listId }: ShoppingListItemsProps) {
 
   const fetchItems = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(`/api/shopping-lists/${listId}/items`)
       
       if (!response.ok) {
@@ -56,6 +60,7 @@ export function ShoppingListItems({ listId }: ShoppingListItemsProps) {
       const data = await response.json()
       setItems(data)
     } catch (error) {
+      console.error("Error fetching items:", error);
       toast({
         title: "Error",
         description: "Failed to load items. Please refresh the page.",
@@ -91,6 +96,7 @@ export function ShoppingListItems({ listId }: ShoppingListItemsProps) {
         description: "Item deleted successfully",
       })
     } catch (error) {
+      console.error("Error deleting item:", error);
       toast({
         title: "Error",
         description: "Failed to delete item",
@@ -115,9 +121,10 @@ export function ShoppingListItems({ listId }: ShoppingListItemsProps) {
       
       toast({
         title: "Success",
-        description: "Prices refreshed successfully",
+        description: "Prices refreshed with real-time data",
       })
     } catch (error) {
+      console.error("Error refreshing prices:", error);
       toast({
         title: "Error",
         description: "Failed to refresh prices",
@@ -152,6 +159,36 @@ export function ShoppingListItems({ listId }: ShoppingListItemsProps) {
     return availablePrices.reduce((lowest, current) => 
       current.price < lowest.price ? current : lowest, availablePrices[0]);
   }
+  
+  const getLastUpdated = (prices: ItemPrice[]) => {
+    if (!prices || prices.length === 0) return null;
+    
+    // Find the most recent update
+    const mostRecent = prices.reduce<string | null>((latest, current) => {
+      const currentDate = new Date(current.lastUpdated);
+      const latestDate = latest ? new Date(latest) : new Date(0);
+      return currentDate > latestDate ? current.lastUpdated : latest;
+    }, null);
+    
+    if (!mostRecent) return "Never";
+    
+    return formatDistanceToNow(new Date(mostRecent), { addSuffix: true });
+  }
+
+  // Function to navigate to compare page
+  const handleCompareClick = () => {
+    try {
+      // Use router.push for programmatic navigation
+      router.push(`/dashboard/lists/${listId}/compare`);
+    } catch (error) {
+      console.error("Navigation error:", error);
+      toast({
+        title: "Navigation Error",
+        description: "Failed to navigate to comparison page. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -202,13 +239,16 @@ export function ShoppingListItems({ listId }: ShoppingListItemsProps) {
                   <ShoppingCart className="h-5 w-5 mr-2 text-primary" />
                   <span>Items ({items.length})</span>
                 </div>
-                <Button 
-                  size="sm"
-                  onClick={() => router.push(`/dashboard/lists/${listId}/compare`)}
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Compare & Optimize
-                </Button>
+                {/* Fixed: Use Button with onClick instead of as="a" */}
+                <div>
+                  <Button 
+                    size="sm"
+                    onClick={handleCompareClick}
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Compare & Optimize
+                  </Button>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -219,12 +259,14 @@ export function ShoppingListItems({ listId }: ShoppingListItemsProps) {
                     <TableHead>Quantity</TableHead>
                     <TableHead>Best Price</TableHead>
                     <TableHead>Platform</TableHead>
+                    <TableHead>Last Updated</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {items.map((item) => {
                     const lowestPrice = getLowestPrice(item.prices);
+                    const lastUpdated = getLastUpdated(item.prices);
                     
                     return (
                       <TableRow key={item.id}>
@@ -247,6 +289,12 @@ export function ShoppingListItems({ listId }: ShoppingListItemsProps) {
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {lastUpdated}
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <Button

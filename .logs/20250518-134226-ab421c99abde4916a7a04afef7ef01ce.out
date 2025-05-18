@@ -1,0 +1,47 @@
+yarn run v1.22.22
+$ next build
+  ▲ Next.js 14.2.28
+  - Environments: .env
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/6) ...
+   Generating static pages (1/6) 
+   Generating static pages (2/6) 
+   Generating static pages (4/6) 
+ ✓ Generating static pages (6/6)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                  Size     First Load JS
+┌ ○ /                                        5.34 kB         101 kB
+├ ○ /_not-found                              871 B            88 kB
+├ ƒ /api/grocery-suggestions                 0 B                0 B
+├ ƒ /api/platforms                           0 B                0 B
+├ ƒ /api/real-time-prices                    0 B                0 B
+├ ƒ /api/shopping-lists                      0 B                0 B
+├ ƒ /api/shopping-lists/[id]                 0 B                0 B
+├ ƒ /api/shopping-lists/[id]/items           0 B                0 B
+├ ƒ /api/shopping-lists/[id]/items/[itemId]  0 B                0 B
+├ ƒ /api/shopping-lists/[id]/refresh-prices  0 B                0 B
+├ ○ /dashboard                               5.33 kB         141 kB
+├ ƒ /dashboard/lists/[id]                    4.89 kB         146 kB
+├ ƒ /dashboard/lists/[id]/add-item           5.95 kB         142 kB
+├ ƒ /dashboard/lists/[id]/compare            11.1 kB         152 kB
+├ ƒ /dashboard/lists/[id]/edit               3.63 kB         140 kB
+└ ○ /dashboard/lists/new                     3.54 kB         131 kB
++ First Load JS shared by all                87.1 kB
+  ├ chunks/275-ff60e7c67b8d31ec.js           31.6 kB
+  ├ chunks/a0b5f63a-93474dd3ad519a8b.js      53.6 kB
+  └ other shared chunks (total)              1.89 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+Done in 15.52s.

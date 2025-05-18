@@ -16,7 +16,8 @@ import {
   ShoppingBag,
   Clock,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Info
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
@@ -25,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tooltip } from '@/components/ui/tooltip'
 
 import { formatCurrency, optimizeShoppingList } from '@/lib/utils'
 
@@ -134,7 +136,7 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
       
       toast({
         title: "Success",
-        description: "Prices refreshed with real-time data",
+        description: "Prices refreshed with real-time data from all platforms",
       });
     } catch (error) {
       console.error('Error refreshing prices:', error);
@@ -319,6 +321,31 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
   
   const lastUpdated = getLastUpdated();
 
+  // Count platforms with prices for each item
+  const countPlatformsWithPrices = (item: ShoppingItem): number => {
+    if (!item || !item.prices || !Array.isArray(item.prices)) return 0;
+    
+    // Count unique platforms with available prices
+    const platforms = new Set<string>();
+    item.prices.forEach(price => {
+      if (price && price.platform && price.available) {
+        platforms.add(price.platform);
+      }
+    });
+    
+    return platforms.size;
+  };
+  
+  // Calculate average number of platforms per item
+  const calculateAveragePlatformsPerItem = (): number => {
+    if (!Array.isArray(items) || items.length === 0) return 0;
+    
+    const totalPlatforms = items.reduce((sum, item) => sum + countPlatformsWithPrices(item), 0);
+    return Math.round((totalPlatforms / items.length) * 10) / 10; // Round to 1 decimal place
+  };
+  
+  const averagePlatformsPerItem = calculateAveragePlatformsPerItem();
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
@@ -387,7 +414,7 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                   Price Comparison Summary
                 </CardTitle>
                 <CardDescription>
-                  Compare prices across platforms and find the best deals
+                  Compare prices across {platforms.length} platforms and find the best deals
                 </CardDescription>
               </div>
               <div className="flex items-center text-sm text-muted-foreground">
@@ -406,13 +433,28 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               <Card className="bg-white/50 dark:bg-gray-800/50">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Total Items</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">{items.length}</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/50 dark:bg-gray-800/50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center">
+                    Platforms Per Item
+                    <Tooltip content="Average number of platforms with prices for each item">
+                      <Info className="h-4 w-4 ml-1 text-muted-foreground" />
+                    </Tooltip>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{averagePlatformsPerItem}</div>
+                  <div className="text-sm text-muted-foreground">out of {platforms.length} platforms</div>
                 </CardContent>
               </Card>
               
@@ -502,7 +544,18 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                         <div key={platform} className="space-y-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <Badge className="mr-2">{platform}</Badge>
+                              {platformInfo?.logoUrl ? (
+                                <div className="w-8 h-8 mr-2 relative overflow-hidden rounded">
+                                  <Image 
+                                    src={platformInfo.logoUrl} 
+                                    alt={platform} 
+                                    fill 
+                                    className="object-contain"
+                                  />
+                                </div>
+                              ) : (
+                                <Badge className="mr-2">{platform}</Badge>
+                              )}
                               <span className="text-sm text-muted-foreground">
                                 {platformItemsArray.length} {platformItemsArray.length === 1 ? 'item' : 'items'}
                               </span>
@@ -626,150 +679,180 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      {Array.isArray(platforms) && platforms.map(platform => (
-                        platform ? <TableHead key={platform.id}>{platform.name}</TableHead> : null
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Array.isArray(items) && items.map(item => {
-                      if (!item) return null;
-                      
-                      return (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.name || 'Unknown Item'}</TableCell>
-                          <TableCell>
-                            {typeof item.quantity === 'number' ? item.quantity : 1} 
-                            {item.unit && <span className="text-muted-foreground">{item.unit}</span>}
-                          </TableCell>
-                          
-                          {Array.isArray(platforms) && platforms.map(platform => {
-                            if (!platform) return null;
-                            
-                            // Check if prices array exists before finding
-                            const price = item.prices && Array.isArray(item.prices) 
-                              ? item.prices.find(p => p && p.platform === platform.name) 
-                              : undefined;
-                            
-                            return (
-                              <TableCell key={platform.id}>
-                                {price ? (
-                                  <div>
-                                    {price.available ? (
-                                      <div className="flex flex-col">
-                                        <span className="font-medium">{formatCurrency(price.price)}</span>
-                                        {price.url && (
-                                          <Link 
-                                            href={price.url} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-xs text-blue-600 hover:underline flex items-center mt-1"
-                                          >
-                                            View <ExternalLink className="ml-1 h-3 w-3" />
-                                          </Link>
-                                        )}
-                                      </div>
-                                    ) : (
-                                      <Badge variant="outline" className="text-muted-foreground">
-                                        Not available
-                                      </Badge>
-                                    )}
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        {Array.isArray(platforms) && platforms.map(platform => (
+                          platform ? (
+                            <TableHead key={platform.id} className="min-w-[120px]">
+                              <div className="flex items-center">
+                                {platform.logoUrl ? (
+                                  <div className="w-6 h-6 mr-1 relative overflow-hidden rounded">
+                                    <Image 
+                                      src={platform.logoUrl} 
+                                      alt={platform.name} 
+                                      fill 
+                                      className="object-contain"
+                                    />
                                   </div>
-                                ) : (
-                                  <span className="text-muted-foreground">-</span>
-                                )}
-                              </TableCell>
-                            );
-                          })}
-                        </TableRow>
-                      );
-                    })}
-                    
-                    <TableRow className="bg-muted/50">
-                      <TableCell colSpan={2} className="font-bold">
-                        Platform Totals
-                      </TableCell>
-                      {Array.isArray(platforms) && platforms.map(platform => {
-                        if (!platform) return null;
+                                ) : null}
+                                {platform.name}
+                              </div>
+                            </TableHead>
+                          ) : null
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {Array.isArray(items) && items.map(item => {
+                        if (!item) return null;
+                        
+                        // Count platforms with prices for this item
+                        const platformCount = countPlatformsWithPrices(item);
                         
                         return (
-                          <TableCell key={platform.id} className="font-bold">
-                            {platformTotals[platform.name] > 0 
-                              ? formatCurrency(platformTotals[platform.name]) 
-                              : <span className="text-muted-foreground">-</span>}
-                          </TableCell>
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center">
+                                {item.name || 'Unknown Item'}
+                                {platformCount === 4 ? (
+                                  <Badge variant="success" className="ml-2 text-xs">All platforms</Badge>
+                                ) : platformCount >= 3 ? (
+                                  <Badge variant="secondary" className="ml-2 text-xs">{platformCount} platforms</Badge>
+                                ) : null}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {typeof item.quantity === 'number' ? item.quantity : 1} 
+                              {item.unit && <span className="text-muted-foreground">{item.unit}</span>}
+                            </TableCell>
+                            
+                            {Array.isArray(platforms) && platforms.map(platform => {
+                              if (!platform) return null;
+                              
+                              // Check if prices array exists before finding
+                              const price = item.prices && Array.isArray(item.prices) 
+                                ? item.prices.find(p => p && p.platform === platform.name) 
+                                : undefined;
+                              
+                              return (
+                                <TableCell key={platform.id}>
+                                  {price ? (
+                                    <div>
+                                      {price.available ? (
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">{formatCurrency(price.price)}</span>
+                                          {price.url && (
+                                            <Link 
+                                              href={price.url} 
+                                              target="_blank" 
+                                              rel="noopener noreferrer"
+                                              className="text-xs text-blue-600 hover:underline flex items-center mt-1"
+                                            >
+                                              View <ExternalLink className="ml-1 h-3 w-3" />
+                                            </Link>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <Badge variant="outline" className="text-muted-foreground">
+                                          Not available
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">-</span>
+                                  )}
+                                </TableCell>
+                              );
+                            })}
+                          </TableRow>
                         );
                       })}
-                    </TableRow>
-                    
-                    <TableRow>
-                      <TableCell colSpan={2} className="font-medium text-muted-foreground">
-                        Items Available
-                      </TableCell>
-                      {Array.isArray(platforms) && platforms.map(platform => {
-                        if (!platform) return null;
-                        
-                        const availableItems = Array.isArray(items) 
-                          ? items.filter(item => 
-                              item && item.prices && Array.isArray(item.prices) &&
-                              item.prices.some(price => price && price.platform === platform.name && price.available)
-                            ).length
-                          : 0;
-                        
-                        const totalItems = Array.isArray(items) ? items.length : 0;
-                        
-                        return (
-                          <TableCell key={platform.id}>
-                            {availableItems > 0 ? (
-                              <Badge variant={availableItems === totalItems ? "success" : "warning"}>
-                                {availableItems}/{totalItems}
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-muted-foreground">0/{totalItems}</Badge>
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                    
-                    <TableRow>
-                      <TableCell colSpan={2} className="font-medium text-muted-foreground">
-                        Delivery Fee
-                      </TableCell>
-                      {Array.isArray(platforms) && platforms.map(platform => {
-                        if (!platform) return null;
-                        
-                        return (
-                          <TableCell key={platform.id}>
-                            {formatCurrency(platform.deliveryFee || 0)}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                    
-                    <TableRow>
-                      <TableCell colSpan={2} className="font-medium text-muted-foreground">
-                        Min Order Value
-                      </TableCell>
-                      {Array.isArray(platforms) && platforms.map(platform => {
-                        if (!platform) return null;
-                        
-                        return (
-                          <TableCell key={platform.id}>
-                            {(platform.minOrderValue || 0) > 0 
-                              ? formatCurrency(platform.minOrderValue || 0) 
-                              : <span className="text-muted-foreground">None</span>}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  </TableBody>
-                </Table>
+                      
+                      <TableRow className="bg-muted/50">
+                        <TableCell colSpan={2} className="font-bold">
+                          Platform Totals
+                        </TableCell>
+                        {Array.isArray(platforms) && platforms.map(platform => {
+                          if (!platform) return null;
+                          
+                          return (
+                            <TableCell key={platform.id} className="font-bold">
+                              {platformTotals[platform.name] > 0 
+                                ? formatCurrency(platformTotals[platform.name]) 
+                                : <span className="text-muted-foreground">-</span>}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                      
+                      <TableRow>
+                        <TableCell colSpan={2} className="font-medium text-muted-foreground">
+                          Items Available
+                        </TableCell>
+                        {Array.isArray(platforms) && platforms.map(platform => {
+                          if (!platform) return null;
+                          
+                          const availableItems = Array.isArray(items) 
+                            ? items.filter(item => 
+                                item && item.prices && Array.isArray(item.prices) &&
+                                item.prices.some(price => price && price.platform === platform.name && price.available)
+                              ).length
+                            : 0;
+                          
+                          const totalItems = Array.isArray(items) ? items.length : 0;
+                          
+                          return (
+                            <TableCell key={platform.id}>
+                              {availableItems > 0 ? (
+                                <Badge variant={availableItems === totalItems ? "success" : "warning"}>
+                                  {availableItems}/{totalItems}
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-muted-foreground">0/{totalItems}</Badge>
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                      
+                      <TableRow>
+                        <TableCell colSpan={2} className="font-medium text-muted-foreground">
+                          Delivery Fee
+                        </TableCell>
+                        {Array.isArray(platforms) && platforms.map(platform => {
+                          if (!platform) return null;
+                          
+                          return (
+                            <TableCell key={platform.id}>
+                              {formatCurrency(platform.deliveryFee || 0)}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                      
+                      <TableRow>
+                        <TableCell colSpan={2} className="font-medium text-muted-foreground">
+                          Min Order Value
+                        </TableCell>
+                        {Array.isArray(platforms) && platforms.map(platform => {
+                          if (!platform) return null;
+                          
+                          return (
+                            <TableCell key={platform.id}>
+                              {(platform.minOrderValue || 0) > 0 
+                                ? formatCurrency(platform.minOrderValue || 0) 
+                                : <span className="text-muted-foreground">None</span>}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
               <CardFooter className="flex justify-between">
                 <div className="text-sm text-muted-foreground">

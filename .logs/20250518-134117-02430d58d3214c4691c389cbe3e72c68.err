@@ -1,0 +1,34 @@
+
+
+===== TS errors =====
+
+[Test Mode] ./components/shopping-list-items.tsx:247:23
+Type error: Type '{ children: (string | Element)[]; size: "sm"; as: string; onClick: (e: MouseEvent<HTMLButtonElement, MouseEvent>) => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps & RefAttributes<HTMLButtonElement>'.
+  Property 'as' does not exist on type 'IntrinsicAttributes & ButtonProps & RefAttributes<HTMLButtonElement>'.
+
+[0m [90m 245 |[39m                     [33m<[39m[33mButton[39m [0m
+[0m [90m 246 |[39m                       size[33m=[39m[32m"sm"[39m[0m
+[0m[31m[1m>[22m[39m[90m 247 |[39m                       [36mas[39m[33m=[39m[32m"a"[39m[0m
+[0m [90m     |[39m                       [31m[1m^[22m[39m[0m
+[0m [90m 248 |[39m                       onClick[33m=[39m{(e) [33m=>[39m {[0m
+[0m [90m 249 |[39m                         [90m// Prevent default to avoid double navigation[39m[0m
+[0m [90m 250 |[39m                         e[33m.[39mpreventDefault()[33m;[39m[0m
+
+===== TS errors =====
+
+
+Failed to compile.
+
+./components/shopping-list-items.tsx:247:23
+Type error: Type '{ children: (string | Element)[]; size: "sm"; as: string; onClick: (e: MouseEvent<HTMLButtonElement, MouseEvent>) => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps & RefAttributes<HTMLButtonElement>'.
+  Property 'as' does not exist on type 'IntrinsicAttributes & ButtonProps & RefAttributes<HTMLButtonElement>'.
+
+[0m [90m 245 |[39m                     [33m<[39m[33mButton[39m [0m
+[0m [90m 246 |[39m                       size[33m=[39m[32m"sm"[39m[0m
+[0m[31m[1m>[22m[39m[90m 247 |[39m                       [36mas[39m[33m=[39m[32m"a"[39m[0m
+[0m [90m     |[39m                       [31m[1m^[22m[39m[0m
+[0m [90m 248 |[39m                       onClick[33m=[39m{(e) [33m=>[39m {[0m
+[0m [90m 249 |[39m                         [90m// Prevent default to avoid double navigation[39m[0m
+[0m [90m 250 |[39m                         e[33m.[39mpreventDefault()[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+error Command failed with exit code 1.

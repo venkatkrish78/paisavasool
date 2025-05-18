@@ -1,0 +1,51 @@
+yarn run v1.22.22
+$ next build
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+  ▲ Next.js 14.2.28
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/6) ...
+   Generating static pages (1/6) 
+   Generating static pages (2/6) 
+   Generating static pages (4/6) 
+ ✓ Generating static pages (6/6)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                  Size     First Load JS
+┌ ○ /                                        186 B           101 kB
+├ ○ /_not-found                              873 B            88 kB
+├ ƒ /api/grocery-suggestions                 0 B                0 B
+├ ƒ /api/platforms                           0 B                0 B
+├ ƒ /api/real-time-prices                    0 B                0 B
+├ ƒ /api/shopping-lists                      0 B                0 B
+├ ƒ /api/shopping-lists/[id]                 0 B                0 B
+├ ƒ /api/shopping-lists/[id]/items           0 B                0 B
+├ ƒ /api/shopping-lists/[id]/items/[itemId]  0 B                0 B
+├ ƒ /api/shopping-lists/[id]/refresh-prices  0 B                0 B
+├ ○ /dashboard                               5.38 kB         141 kB
+├ ƒ /dashboard/lists/[id]                    4.94 kB         146 kB
+├ ƒ /dashboard/lists/[id]/add-item           5.99 kB         142 kB
+├ ƒ /dashboard/lists/[id]/compare            12.5 kB         158 kB
+├ ƒ /dashboard/lists/[id]/edit               3.67 kB         140 kB
+└ ○ /dashboard/lists/new                     3.59 kB         131 kB
++ First Load JS shared by all                87.1 kB
+  ├ chunks/364-35fe8aa99ab5d653.js           31.6 kB
+  ├ chunks/618f8807-f0b02fe8dc831021.js      53.6 kB
+  └ other shared chunks (total)              1.89 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+Done in 45.95s.

@@ -1,0 +1,100 @@
+yarn run v1.22.22
+$ next dev
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Environments: .env
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+ ✓ Starting...
+ ✓ Ready in 1913ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.1s (1237 modules)
+ HEAD / 200 in 707ms
+ HEAD / 200 in 4533ms
+ ✓ Compiled in 789ms (607 modules)
+ GET / 200 in 67ms
+ GET / 200 in 40ms
+ GET / 200 in 40ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 949ms (1248 modules)
+ ✓ Compiled /api/shopping-lists in 333ms (677 modules)
+prisma:query SELECT "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId" FROM "public"."ShoppingList" WHERE 1=1 ORDER BY "public"."ShoppingList"."updatedAt" DESC OFFSET $1
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" IN ($1,$2) OFFSET $3
+ GET /api/shopping-lists 200 in 582ms
+prisma:query SELECT "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId" FROM "public"."ShoppingList" WHERE 1=1 ORDER BY "public"."ShoppingList"."updatedAt" DESC OFFSET $1
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" IN ($1,$2) OFFSET $3
+ GET /api/shopping-lists 200 in 20ms
+ ✓ Compiled /dashboard/lists/new in 367ms (1291 modules)
+prisma:query INSERT INTO "public"."ShoppingList" ("id","name","createdAt","updatedAt") VALUES ($1,$2,$3,$4) RETURNING "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId"
+ POST /api/shopping-lists 200 in 29ms
+ ○ Compiling /dashboard/lists/[id] ...
+ ✓ Compiled /dashboard/lists/[id] in 775ms (1373 modules)
+prisma:query SELECT 1
+prisma:query SELECT "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId" FROM "public"."ShoppingList" WHERE ("public"."ShoppingList"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ ✓ Compiled /api/shopping-lists/[id]/items in 189ms (732 modules)
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" = $1 ORDER BY "public"."ShoppingItem"."createdAt" DESC OFFSET $2
+ GET /api/shopping-lists/d12e249a-24ee-4205-964f-1148c07175ff/items 200 in 609ms
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" = $1 ORDER BY "public"."ShoppingItem"."createdAt" DESC OFFSET $2
+ GET /api/shopping-lists/d12e249a-24ee-4205-964f-1148c07175ff/items 200 in 35ms
+ ○ Compiling /dashboard/lists/[id]/add-item ...
+ ✓ Compiled /dashboard/lists/[id]/add-item in 511ms (1391 modules)
+prisma:query SELECT "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId" FROM "public"."ShoppingList" WHERE ("public"."ShoppingList"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ ✓ Compiled /api/grocery-suggestions in 304ms (744 modules)
+ GET /api/grocery-suggestions?query=apples 200 in 456ms
+ GET /api/grocery-suggestions?query=apple 200 in 114ms
+ GET /api/grocery-suggestions?query=banan 200 in 116ms
+ GET /api/grocery-suggestions?query=banana 200 in 117ms
+ GET /api/grocery-suggestions?query=Bananas 200 in 116ms
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."ShoppingItem" ("id","name","quantity","unit","createdAt","updatedAt","shoppingListId") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId"
+ ✓ Compiled /api/real-time-prices in 207ms (746 modules)
+ GET /api/real-time-prices?item=Bananas 200 in 555ms
+prisma:query INSERT INTO "public"."ItemPrice" ("id","platform","price","url","available","productName","lastUpdated","shoppingItemId") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING "public"."ItemPrice"."id", "public"."ItemPrice"."platform", "public"."ItemPrice"."price", "public"."ItemPrice"."url", "public"."ItemPrice"."available", "public"."ItemPrice"."productName", "public"."ItemPrice"."imageUrl", "public"."ItemPrice"."lastUpdated", "public"."ItemPrice"."shoppingItemId"
+prisma:query INSERT INTO "public"."ItemPrice" ("id","platform","price","url","available","productName","lastUpdated","shoppingItemId") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING "public"."ItemPrice"."id", "public"."ItemPrice"."platform", "public"."ItemPrice"."price", "public"."ItemPrice"."url", "public"."ItemPrice"."available", "public"."ItemPrice"."productName", "public"."ItemPrice"."imageUrl", "public"."ItemPrice"."lastUpdated", "public"."ItemPrice"."shoppingItemId"
+prisma:query INSERT INTO "public"."ItemPrice" ("id","platform","price","url","available","productName","lastUpdated","shoppingItemId") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING "public"."ItemPrice"."id", "public"."ItemPrice"."platform", "public"."ItemPrice"."price", "public"."ItemPrice"."url", "public"."ItemPrice"."available", "public"."ItemPrice"."productName", "public"."ItemPrice"."imageUrl", "public"."ItemPrice"."lastUpdated", "public"."ItemPrice"."shoppingItemId"
+prisma:query INSERT INTO "public"."ItemPrice" ("id","platform","price","url","available","productName","lastUpdated","shoppingItemId") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING "public"."ItemPrice"."id", "public"."ItemPrice"."platform", "public"."ItemPrice"."price", "public"."ItemPrice"."url", "public"."ItemPrice"."available", "public"."ItemPrice"."productName", "public"."ItemPrice"."imageUrl", "public"."ItemPrice"."lastUpdated", "public"."ItemPrice"."shoppingItemId"
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE ("public"."ShoppingItem"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."ItemPrice"."id", "public"."ItemPrice"."platform", "public"."ItemPrice"."price", "public"."ItemPrice"."url", "public"."ItemPrice"."available", "public"."ItemPrice"."productName", "public"."ItemPrice"."imageUrl", "public"."ItemPrice"."lastUpdated", "public"."ItemPrice"."shoppingItemId" FROM "public"."ItemPrice" WHERE "public"."ItemPrice"."shoppingItemId" IN ($1) OFFSET $2
+ POST /api/shopping-lists/d12e249a-24ee-4205-964f-1148c07175ff/items 200 in 625ms
+prisma:query SELECT "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId" FROM "public"."ShoppingList" WHERE ("public"."ShoppingList"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId" FROM "public"."ShoppingList" WHERE 1=1 ORDER BY "public"."ShoppingList"."updatedAt" DESC OFFSET $1
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" IN ($1,$2,$3) OFFSET $4
+ GET /api/shopping-lists 200 in 19ms
+prisma:query SELECT "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId" FROM "public"."ShoppingList" WHERE 1=1 ORDER BY "public"."ShoppingList"."updatedAt" DESC OFFSET $1
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" IN ($1,$2,$3) OFFSET $4
+ GET /api/shopping-lists 200 in 19ms
+prisma:query SELECT "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId" FROM "public"."ShoppingList" WHERE ("public"."ShoppingList"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" = $1 ORDER BY "public"."ShoppingItem"."createdAt" DESC OFFSET $2
+prisma:query SELECT "public"."ItemPrice"."id", "public"."ItemPrice"."platform", "public"."ItemPrice"."price", "public"."ItemPrice"."url", "public"."ItemPrice"."available", "public"."ItemPrice"."productName", "public"."ItemPrice"."imageUrl", "public"."ItemPrice"."lastUpdated", "public"."ItemPrice"."shoppingItemId" FROM "public"."ItemPrice" WHERE "public"."ItemPrice"."shoppingItemId" IN ($1) OFFSET $2
+ GET /api/shopping-lists/d12e249a-24ee-4205-964f-1148c07175ff/items 200 in 40ms
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" = $1 ORDER BY "public"."ShoppingItem"."createdAt" DESC OFFSET $2
+prisma:query SELECT "public"."ItemPrice"."id", "public"."ItemPrice"."platform", "public"."ItemPrice"."price", "public"."ItemPrice"."url", "public"."ItemPrice"."available", "public"."ItemPrice"."productName", "public"."ItemPrice"."imageUrl", "public"."ItemPrice"."lastUpdated", "public"."ItemPrice"."shoppingItemId" FROM "public"."ItemPrice" WHERE "public"."ItemPrice"."shoppingItemId" IN ($1) OFFSET $2
+ GET /api/shopping-lists/d12e249a-24ee-4205-964f-1148c07175ff/items 200 in 18ms
+ ○ Compiling /dashboard/lists/[id]/compare ...
+ ✓ Compiled /dashboard/lists/[id]/compare in 1201ms (1421 modules)
+prisma:query SELECT 1
+prisma:query SELECT "public"."ShoppingList"."id", "public"."ShoppingList"."name", "public"."ShoppingList"."createdAt", "public"."ShoppingList"."updatedAt", "public"."ShoppingList"."userId" FROM "public"."ShoppingList" WHERE ("public"."ShoppingList"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" = $1 ORDER BY "public"."ShoppingItem"."createdAt" DESC OFFSET $2
+prisma:query SELECT "public"."ItemPrice"."id", "public"."ItemPrice"."platform", "public"."ItemPrice"."price", "public"."ItemPrice"."url", "public"."ItemPrice"."available", "public"."ItemPrice"."productName", "public"."ItemPrice"."imageUrl", "public"."ItemPrice"."lastUpdated", "public"."ItemPrice"."shoppingItemId" FROM "public"."ItemPrice" WHERE "public"."ItemPrice"."shoppingItemId" IN ($1) OFFSET $2
+ GET /api/shopping-lists/d12e249a-24ee-4205-964f-1148c07175ff/items 200 in 40ms
+ ✓ Compiled /api/platforms in 248ms (763 modules)
+ GET /api/shopping-lists/d12e249a-24ee-4205-964f-1148c07175ff/items 200 in 528ms
+prisma:query SELECT "public"."ShoppingItem"."id", "public"."ShoppingItem"."name", "public"."ShoppingItem"."quantity", "public"."ShoppingItem"."unit", "public"."ShoppingItem"."createdAt", "public"."ShoppingItem"."updatedAt", "public"."ShoppingItem"."shoppingListId" FROM "public"."ShoppingItem" WHERE "public"."ShoppingItem"."shoppingListId" = $1 ORDER BY "public"."ShoppingItem"."createdAt" DESC OFFSET $2
+prisma:query SELECT "public"."ItemPrice"."id", "public"."ItemPrice"."platform", "public"."ItemPrice"."price", "public"."ItemPrice"."url", "public"."ItemPrice"."available", "public"."ItemPrice"."productName", "public"."ItemPrice"."imageUrl", "public"."ItemPrice"."lastUpdated", "public"."ItemPrice"."shoppingItemId" FROM "public"."ItemPrice" WHERE "public"."ItemPrice"."shoppingItemId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."PlatformInfo"."id", "public"."PlatformInfo"."name", "public"."PlatformInfo"."logoUrl", "public"."PlatformInfo"."deliveryFee", "public"."PlatformInfo"."minOrderValue", "public"."PlatformInfo"."deliveryTime" FROM "public"."PlatformInfo" WHERE 1=1 OFFSET $1
+prisma:query SELECT "public"."PlatformInfo"."id", "public"."PlatformInfo"."name", "public"."PlatformInfo"."logoUrl", "public"."PlatformInfo"."deliveryFee", "public"."PlatformInfo"."minOrderValue", "public"."PlatformInfo"."deliveryTime" FROM "public"."PlatformInfo" WHERE 1=1 ORDER BY "public"."PlatformInfo"."name" ASC OFFSET $1
+ GET /api/platforms 200 in 532ms
+prisma:query SELECT "public"."PlatformInfo"."id", "public"."PlatformInfo"."name", "public"."PlatformInfo"."logoUrl", "public"."PlatformInfo"."deliveryFee", "public"."PlatformInfo"."minOrderValue", "public"."PlatformInfo"."deliveryTime" FROM "public"."PlatformInfo" WHERE 1=1 OFFSET $1
+prisma:query SELECT "public"."PlatformInfo"."id", "public"."PlatformInfo"."name", "public"."PlatformInfo"."logoUrl", "public"."PlatformInfo"."deliveryFee", "public"."PlatformInfo"."minOrderValue", "public"."PlatformInfo"."deliveryTime" FROM "public"."PlatformInfo" WHERE 1=1 ORDER BY "public"."PlatformInfo"."name" ASC OFFSET $1
+ GET /api/platforms 200 in 118ms
+ ✓ Compiled in 1193ms (1330 modules)
+ ✓ Compiled in 1925ms (1362 modules)
+ ✓ Compiled in 1417ms (1332 modules)
+ ✓ Compiled in 2.4s (1368 modules)
+ ✓ Compiled in 386ms (675 modules)
+ ✓ Compiled in 486ms (1348 modules)
+ ✓ Compiled in 585ms (1354 modules)
+ ✓ Compiled in 924ms (1350 modules)
+ ✓ Compiled in 1004ms (1368 modules)
+[?25h
