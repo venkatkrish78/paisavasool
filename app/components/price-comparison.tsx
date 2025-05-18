@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
+import { formatDistanceToNow } from 'date-fns'
 import { 
   ShoppingCart, 
   TrendingDown, 
@@ -12,7 +13,10 @@ import {
   Check, 
   X, 
   ArrowRight,
-  ShoppingBag
+  ShoppingBag,
+  Clock,
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
@@ -40,6 +44,7 @@ interface ItemPrice {
   available: boolean
   productName: string | null
   imageUrl: string | null
+  lastUpdated: string
 }
 
 interface PlatformInfo {
@@ -59,47 +64,90 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
   const [items, setItems] = useState<ShoppingItem[]>([])
   const [platforms, setPlatforms] = useState<PlatformInfo[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
   const { ref, inView } = useInView({
     triggerOnce: false,
     threshold: 0.1,
   })
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch items
-        const itemsResponse = await fetch(`/api/shopping-lists/${listId}/items`)
-        
-        if (!itemsResponse.ok) {
-          throw new Error('Failed to fetch items')
-        }
-        
-        const itemsData = await itemsResponse.json()
-        setItems(itemsData)
-        
-        // Fetch platform info
-        const platformsResponse = await fetch('/api/platforms')
-        
-        if (!platformsResponse.ok) {
-          throw new Error('Failed to fetch platform information')
-        }
-        
-        const platformsData = await platformsResponse.json()
-        setPlatforms(platformsData)
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load data. Please refresh the page.",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
+  const fetchData = async () => {
+    try {
+      setError(null);
+      
+      // Fetch items
+      console.log("Fetching items for list:", listId);
+      const itemsResponse = await fetch(`/api/shopping-lists/${listId}/items`);
+      
+      if (!itemsResponse.ok) {
+        throw new Error(`Failed to fetch items: ${itemsResponse.status} ${itemsResponse.statusText}`);
       }
+      
+      const itemsData = await itemsResponse.json();
+      console.log("Items data received:", itemsData);
+      setItems(Array.isArray(itemsData) ? itemsData : []);
+      
+      // Fetch platform info
+      console.log("Fetching platform info");
+      const platformsResponse = await fetch('/api/platforms');
+      
+      if (!platformsResponse.ok) {
+        throw new Error(`Failed to fetch platform information: ${platformsResponse.status} ${platformsResponse.statusText}`);
+      }
+      
+      const platformsData = await platformsResponse.json();
+      console.log("Platform data received:", platformsData);
+      setPlatforms(Array.isArray(platformsData) ? platformsData : []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      toast({
+        title: "Error",
+        description: "Failed to load data. Please refresh the page.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
+  };
+  
+  useEffect(() => {
+    fetchData();
+  }, [listId, toast]);
+
+  const refreshPrices = async () => {
+    setIsRefreshing(true);
+    setError(null);
     
-    fetchData()
-  }, [listId, toast])
+    try {
+      console.log("Refreshing prices for list:", listId);
+      const response = await fetch(`/api/shopping-lists/${listId}/refresh-prices`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to refresh prices: ${response.status} ${response.statusText}`);
+      }
+      
+      await fetchData();
+      
+      toast({
+        title: "Success",
+        description: "Prices refreshed with real-time data",
+      });
+    } catch (error) {
+      console.error('Error refreshing prices:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      toast({
+        title: "Error",
+        description: "Failed to refresh prices. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const container = {
     hidden: { opacity: 0 },
@@ -109,12 +157,12 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
         staggerChildren: 0.1
       }
     }
-  }
+  };
 
   const item = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 }
-  }
+  };
 
   // Calculate total cost for each platform
   const calculatePlatformTotals = () => {
@@ -122,35 +170,61 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
     const platformItems: Record<string, ShoppingItem[]> = {};
     
     // Initialize with all platforms
-    platforms.forEach(platform => {
-      platformTotals[platform.name] = 0;
-      platformItems[platform.name] = [];
-    });
+    if (Array.isArray(platforms)) {
+      platforms.forEach(platform => {
+        if (platform && platform.name) {
+          platformTotals[platform.name] = 0;
+          platformItems[platform.name] = [];
+        }
+      });
+    }
     
     // Calculate totals
-    items.forEach(item => {
-      item.prices.forEach(price => {
-        if (price.available) {
-          const totalItemPrice = price.price * item.quantity;
-          platformTotals[price.platform] += totalItemPrice;
-          
-          // Add item to platform items
-          if (!platformItems[price.platform].find(i => i.id === item.id)) {
-            platformItems[price.platform].push({
-              ...item,
-              prices: [price]
-            });
+    if (Array.isArray(items)) {
+      items.forEach(item => {
+        // Check if prices array exists before iterating
+        if (item && item.prices && Array.isArray(item.prices)) {
+          item.prices.forEach(price => {
+            if (price && price.platform && price.available && typeof price.price === 'number') {
+              const totalItemPrice = price.price * (typeof item.quantity === 'number' ? item.quantity : 1);
+              
+              // Initialize platform total if it doesn't exist
+              if (typeof platformTotals[price.platform] !== 'number') {
+                platformTotals[price.platform] = 0;
+              }
+              
+              platformTotals[price.platform] += totalItemPrice;
+              
+              // Initialize platform items array if it doesn't exist
+              if (!Array.isArray(platformItems[price.platform])) {
+                platformItems[price.platform] = [];
+              }
+              
+              // Add item to platform items if not already present
+              const existingItem = platformItems[price.platform].find(i => i && i.id === item.id);
+              if (!existingItem) {
+                platformItems[price.platform].push({
+                  ...item,
+                  prices: [price]
+                });
+              }
+            }
+          });
+        }
+      });
+    }
+    
+    // Add delivery fees
+    if (Array.isArray(platforms)) {
+      platforms.forEach(platform => {
+        if (platform && platform.name && typeof platformTotals[platform.name] === 'number') {
+          const total = platformTotals[platform.name];
+          if (total > 0 && total >= (platform.minOrderValue || 0)) {
+            platformTotals[platform.name] += (platform.deliveryFee || 0);
           }
         }
       });
-    });
-    
-    // Add delivery fees
-    platforms.forEach(platform => {
-      if (platformTotals[platform.name] > 0 && platformTotals[platform.name] >= platform.minOrderValue) {
-        platformTotals[platform.name] += platform.deliveryFee;
-      }
-    });
+    }
     
     return { platformTotals, platformItems };
   };
@@ -159,41 +233,127 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
   
   // Find the cheapest platform
   const cheapestPlatform = Object.entries(platformTotals)
-    .filter(([_, total]) => total > 0)
+    .filter(([_, total]) => typeof total === 'number' && total > 0)
     .sort(([_, totalA], [__, totalB]) => totalA - totalB)[0]?.[0] || null;
   
   // Calculate optimized shopping
-  const optimized = optimizeShoppingList(items);
+  // Ensure items have valid prices before optimization
+  const validItems = Array.isArray(items) 
+    ? items.filter(item => item && item.prices && Array.isArray(item.prices) && item.prices.length > 0)
+    : [];
+  
+  const optimized = optimizeShoppingList(validItems);
   
   // Calculate total with delivery fees
   let optimizedTotalWithDelivery = optimized.totalCost;
-  Object.keys(optimized.platformItems).forEach(platform => {
-    const platformInfo = platforms.find(p => p.name === platform);
-    if (platformInfo) {
-      const platformTotal = optimized.platformItems[platform].reduce(
-        (sum, item) => sum + (item.bestPrice.price * item.quantity), 0
-      );
+  
+  if (optimized.platformItems && typeof optimized.platformItems === 'object') {
+    Object.keys(optimized.platformItems).forEach(platform => {
+      const platformInfo = Array.isArray(platforms) 
+        ? platforms.find(p => p && p.name === platform) 
+        : undefined;
       
-      if (platformTotal >= platformInfo.minOrderValue) {
-        optimizedTotalWithDelivery += platformInfo.deliveryFee;
+      if (platformInfo) {
+        const platformItemsArray = optimized.platformItems[platform];
+        
+        if (Array.isArray(platformItemsArray)) {
+          const platformTotal = platformItemsArray.reduce(
+            (sum, item) => {
+              if (!item) return sum;
+              const bestPrice = item.bestPrice;
+              const price = bestPrice && typeof bestPrice.price === 'number' ? bestPrice.price : 0;
+              const quantity = typeof item.quantity === 'number' ? item.quantity : 1;
+              return sum + (price * quantity);
+            }, 0
+          );
+          
+          if (platformTotal >= (platformInfo.minOrderValue || 0)) {
+            optimizedTotalWithDelivery += (platformInfo.deliveryFee || 0);
+          }
+        }
       }
-    }
-  });
+    });
+  }
   
   // Calculate savings compared to cheapest single platform
-  const cheapestPlatformTotal = cheapestPlatform ? platformTotals[cheapestPlatform] : 0;
+  const cheapestPlatformTotal = cheapestPlatform && typeof platformTotals[cheapestPlatform] === 'number' 
+    ? platformTotals[cheapestPlatform] 
+    : 0;
+  
   const savings = cheapestPlatformTotal > 0 ? cheapestPlatformTotal - optimizedTotalWithDelivery : 0;
   const savingsPercentage = cheapestPlatformTotal > 0 ? Math.round((savings / cheapestPlatformTotal) * 100) : 0;
+
+  // Get the last updated time for all prices
+  const getLastUpdated = () => {
+    let mostRecent: Date | null = null;
+    
+    if (Array.isArray(items)) {
+      items.forEach(item => {
+        // Check if prices array exists before iterating
+        if (item && item.prices && Array.isArray(item.prices)) {
+          item.prices.forEach(price => {
+            if (price && price.lastUpdated) {
+              try {
+                const priceDate = new Date(price.lastUpdated);
+                if (!mostRecent || priceDate > mostRecent) {
+                  mostRecent = priceDate;
+                }
+              } catch (e) {
+                console.error("Error parsing date:", e);
+              }
+            }
+          });
+        }
+      });
+    }
+    
+    if (!mostRecent) return "Never";
+    
+    try {
+      return formatDistanceToNow(mostRecent, { addSuffix: true });
+    } catch (e) {
+      console.error("Error formatting date:", e);
+      return "Unknown";
+    }
+  };
+  
+  const lastUpdated = getLastUpdated();
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
-  if (items.length === 0) {
+  if (error) {
+    return (
+      <Card className="bg-red-50 dark:bg-red-900/20 border-red-200">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-3 mb-4">
+            <AlertTriangle className="h-6 w-6 text-red-600" />
+            <h3 className="text-lg font-semibold text-red-700">Error Loading Comparison</h3>
+          </div>
+          <p className="mb-4 text-red-600">{error}</p>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={fetchData}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+            <Button asChild>
+              <Link href={`/dashboard/lists/${listId}`}>
+                <ArrowRight className="mr-2 h-4 w-4" />
+                Return to List
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
     return (
       <Card className="bg-muted/50">
         <CardContent className="pt-6 text-center">
@@ -206,7 +366,7 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -220,13 +380,30 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
       <motion.div variants={item}>
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5">
           <CardHeader>
-            <CardTitle className="flex items-center text-2xl">
-              <TrendingDown className="mr-2 h-6 w-6 text-primary" />
-              Price Comparison Summary
-            </CardTitle>
-            <CardDescription>
-              Compare prices across platforms and find the best deals
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="flex items-center text-2xl">
+                  <TrendingDown className="mr-2 h-6 w-6 text-primary" />
+                  Price Comparison Summary
+                </CardTitle>
+                <CardDescription>
+                  Compare prices across platforms and find the best deals
+                </CardDescription>
+              </div>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Clock className="h-4 w-4 mr-1" />
+                Prices updated: {lastUpdated}
+                <Button 
+                  onClick={refreshPrices} 
+                  disabled={isRefreshing}
+                  variant="ghost"
+                  size="sm"
+                  className="ml-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -298,12 +475,27 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {Object.keys(optimized.platformItems).length > 0 ? (
+                {optimized.platformItems && typeof optimized.platformItems === 'object' && 
+                 Object.keys(optimized.platformItems).length > 0 ? (
                   <div className="space-y-6">
-                    {Object.entries(optimized.platformItems).map(([platform, platformItems]) => {
-                      const platformInfo = platforms.find(p => p.name === platform);
-                      const platformTotal = platformItems.reduce(
-                        (sum, item) => sum + (item.bestPrice.price * item.quantity), 0
+                    {Object.entries(optimized.platformItems).map(([platform, platformItemsArray]) => {
+                      if (!Array.isArray(platformItemsArray) || platformItemsArray.length === 0) {
+                        return null;
+                      }
+                      
+                      const platformInfo = Array.isArray(platforms) 
+                        ? platforms.find(p => p && p.name === platform) 
+                        : undefined;
+                      
+                      // Ensure bestPrice exists before calculating
+                      const platformTotal = platformItemsArray.reduce(
+                        (sum, item) => {
+                          if (!item) return sum;
+                          const bestPrice = item.bestPrice;
+                          const price = bestPrice && typeof bestPrice.price === 'number' ? bestPrice.price : 0;
+                          const quantity = typeof item.quantity === 'number' ? item.quantity : 1;
+                          return sum + (price * quantity);
+                        }, 0
                       );
                       
                       return (
@@ -312,18 +504,18 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                             <div className="flex items-center">
                               <Badge className="mr-2">{platform}</Badge>
                               <span className="text-sm text-muted-foreground">
-                                {platformItems.length} {platformItems.length === 1 ? 'item' : 'items'}
+                                {platformItemsArray.length} {platformItemsArray.length === 1 ? 'item' : 'items'}
                               </span>
                             </div>
                             <div className="text-right">
                               <div className="font-medium">{formatCurrency(platformTotal)}</div>
                               {platformInfo && (
                                 <div className="text-xs text-muted-foreground">
-                                  + {formatCurrency(platformInfo.deliveryFee)} delivery
-                                  {platformInfo.minOrderValue > 0 && (
+                                  + {formatCurrency(platformInfo.deliveryFee || 0)} delivery
+                                  {(platformInfo.minOrderValue || 0) > 0 && (
                                     <span>
-                                      {platformTotal < platformInfo.minOrderValue ? 
-                                        ` (min order: ${formatCurrency(platformInfo.minOrderValue)})` : 
+                                      {platformTotal < (platformInfo.minOrderValue || 0) ? 
+                                        ` (min order: ${formatCurrency(platformInfo.minOrderValue || 0)})` : 
                                         ''}
                                     </span>
                                   )}
@@ -342,18 +534,29 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {platformItems.map((item) => (
-                                <TableRow key={item.id}>
-                                  <TableCell className="font-medium">{item.name}</TableCell>
-                                  <TableCell>
-                                    {item.quantity} {item.unit && <span className="text-muted-foreground">{item.unit}</span>}
-                                  </TableCell>
-                                  <TableCell>{formatCurrency(item.bestPrice.price)}</TableCell>
-                                  <TableCell className="text-right">
-                                    {formatCurrency(item.bestPrice.price * item.quantity)}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
+                              {platformItemsArray.map((item) => {
+                                if (!item) return null;
+                                
+                                return (
+                                  <TableRow key={item.id}>
+                                    <TableCell className="font-medium">{item.name || 'Unknown Item'}</TableCell>
+                                    <TableCell>
+                                      {typeof item.quantity === 'number' ? item.quantity : 1} 
+                                      {item.unit && <span className="text-muted-foreground">{item.unit}</span>}
+                                    </TableCell>
+                                    <TableCell>
+                                      {item.bestPrice && typeof item.bestPrice.price === 'number' 
+                                        ? formatCurrency(item.bestPrice.price) 
+                                        : "N/A"}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      {item.bestPrice && typeof item.bestPrice.price === 'number' 
+                                        ? formatCurrency(item.bestPrice.price * (typeof item.quantity === 'number' ? item.quantity : 1)) 
+                                        : "N/A"}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
                               <TableRow>
                                 <TableCell colSpan={3} className="text-right font-medium">Subtotal</TableCell>
                                 <TableCell className="text-right font-medium">{formatCurrency(platformTotal)}</TableCell>
@@ -361,7 +564,7 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                               {platformInfo && (
                                 <TableRow>
                                   <TableCell colSpan={3} className="text-right font-medium">Delivery Fee</TableCell>
-                                  <TableCell className="text-right font-medium">{formatCurrency(platformInfo.deliveryFee)}</TableCell>
+                                  <TableCell className="text-right font-medium">{formatCurrency(platformInfo.deliveryFee || 0)}</TableCell>
                                 </TableRow>
                               )}
                             </TableBody>
@@ -369,7 +572,14 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                           
                           <div className="flex justify-end">
                             <Button asChild>
-                              <Link href={platformItems[0]?.bestPrice?.url || '#'} target="_blank" rel="noopener noreferrer">
+                              <Link 
+                                href={
+                                  (platformItemsArray[0]?.bestPrice?.url) || 
+                                  `https://www.${platform.toLowerCase()}.com`
+                                } 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                              >
                                 <ShoppingCart className="mr-2 h-4 w-4" />
                                 Shop on {platform}
                                 <ExternalLink className="ml-2 h-4 w-4" />
@@ -421,85 +631,106 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                     <TableRow>
                       <TableHead>Item</TableHead>
                       <TableHead>Quantity</TableHead>
-                      {platforms.map(platform => (
-                        <TableHead key={platform.id}>{platform.name}</TableHead>
+                      {Array.isArray(platforms) && platforms.map(platform => (
+                        platform ? <TableHead key={platform.id}>{platform.name}</TableHead> : null
                       ))}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.map(item => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.name}</TableCell>
-                        <TableCell>
-                          {item.quantity} {item.unit && <span className="text-muted-foreground">{item.unit}</span>}
-                        </TableCell>
-                        
-                        {platforms.map(platform => {
-                          const price = item.prices.find(p => p.platform === platform.name);
+                    {Array.isArray(items) && items.map(item => {
+                      if (!item) return null;
+                      
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">{item.name || 'Unknown Item'}</TableCell>
+                          <TableCell>
+                            {typeof item.quantity === 'number' ? item.quantity : 1} 
+                            {item.unit && <span className="text-muted-foreground">{item.unit}</span>}
+                          </TableCell>
                           
-                          return (
-                            <TableCell key={platform.id}>
-                              {price ? (
-                                <div>
-                                  {price.available ? (
-                                    <div className="flex flex-col">
-                                      <span className="font-medium">{formatCurrency(price.price)}</span>
-                                      {price.url && (
-                                        <Link 
-                                          href={price.url} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer"
-                                          className="text-xs text-blue-600 hover:underline flex items-center mt-1"
-                                        >
-                                          View <ExternalLink className="ml-1 h-3 w-3" />
-                                        </Link>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <Badge variant="outline" className="text-muted-foreground">
-                                      Not available
-                                    </Badge>
-                                  )}
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
-                            </TableCell>
-                          );
-                        })}
-                      </TableRow>
-                    ))}
+                          {Array.isArray(platforms) && platforms.map(platform => {
+                            if (!platform) return null;
+                            
+                            // Check if prices array exists before finding
+                            const price = item.prices && Array.isArray(item.prices) 
+                              ? item.prices.find(p => p && p.platform === platform.name) 
+                              : undefined;
+                            
+                            return (
+                              <TableCell key={platform.id}>
+                                {price ? (
+                                  <div>
+                                    {price.available ? (
+                                      <div className="flex flex-col">
+                                        <span className="font-medium">{formatCurrency(price.price)}</span>
+                                        {price.url && (
+                                          <Link 
+                                            href={price.url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-blue-600 hover:underline flex items-center mt-1"
+                                          >
+                                            View <ExternalLink className="ml-1 h-3 w-3" />
+                                          </Link>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <Badge variant="outline" className="text-muted-foreground">
+                                        Not available
+                                      </Badge>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">-</span>
+                                )}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
+                      );
+                    })}
                     
                     <TableRow className="bg-muted/50">
                       <TableCell colSpan={2} className="font-bold">
                         Platform Totals
                       </TableCell>
-                      {platforms.map(platform => (
-                        <TableCell key={platform.id} className="font-bold">
-                          {platformTotals[platform.name] > 0 ? 
-                            formatCurrency(platformTotals[platform.name]) : 
-                            <span className="text-muted-foreground">-</span>}
-                        </TableCell>
-                      ))}
+                      {Array.isArray(platforms) && platforms.map(platform => {
+                        if (!platform) return null;
+                        
+                        return (
+                          <TableCell key={platform.id} className="font-bold">
+                            {platformTotals[platform.name] > 0 
+                              ? formatCurrency(platformTotals[platform.name]) 
+                              : <span className="text-muted-foreground">-</span>}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                     
                     <TableRow>
                       <TableCell colSpan={2} className="font-medium text-muted-foreground">
                         Items Available
                       </TableCell>
-                      {platforms.map(platform => {
-                        const availableItems = items.filter(item => 
-                          item.prices.some(price => price.platform === platform.name && price.available)
-                        ).length;
+                      {Array.isArray(platforms) && platforms.map(platform => {
+                        if (!platform) return null;
+                        
+                        const availableItems = Array.isArray(items) 
+                          ? items.filter(item => 
+                              item && item.prices && Array.isArray(item.prices) &&
+                              item.prices.some(price => price && price.platform === platform.name && price.available)
+                            ).length
+                          : 0;
+                        
+                        const totalItems = Array.isArray(items) ? items.length : 0;
                         
                         return (
                           <TableCell key={platform.id}>
                             {availableItems > 0 ? (
-                              <Badge variant={availableItems === items.length ? "success" : "warning"}>
-                                {availableItems}/{items.length}
+                              <Badge variant={availableItems === totalItems ? "success" : "warning"}>
+                                {availableItems}/{totalItems}
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-muted-foreground">0/{items.length}</Badge>
+                              <Badge variant="outline" className="text-muted-foreground">0/{totalItems}</Badge>
                             )}
                           </TableCell>
                         );
@@ -510,24 +741,32 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
                       <TableCell colSpan={2} className="font-medium text-muted-foreground">
                         Delivery Fee
                       </TableCell>
-                      {platforms.map(platform => (
-                        <TableCell key={platform.id}>
-                          {formatCurrency(platform.deliveryFee)}
-                        </TableCell>
-                      ))}
+                      {Array.isArray(platforms) && platforms.map(platform => {
+                        if (!platform) return null;
+                        
+                        return (
+                          <TableCell key={platform.id}>
+                            {formatCurrency(platform.deliveryFee || 0)}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                     
                     <TableRow>
                       <TableCell colSpan={2} className="font-medium text-muted-foreground">
                         Min Order Value
                       </TableCell>
-                      {platforms.map(platform => (
-                        <TableCell key={platform.id}>
-                          {platform.minOrderValue > 0 ? 
-                            formatCurrency(platform.minOrderValue) : 
-                            <span className="text-muted-foreground">None</span>}
-                        </TableCell>
-                      ))}
+                      {Array.isArray(platforms) && platforms.map(platform => {
+                        if (!platform) return null;
+                        
+                        return (
+                          <TableCell key={platform.id}>
+                            {(platform.minOrderValue || 0) > 0 
+                              ? formatCurrency(platform.minOrderValue || 0) 
+                              : <span className="text-muted-foreground">None</span>}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -549,5 +788,5 @@ export function PriceComparison({ listId }: PriceComparisonProps) {
         </Tabs>
       </motion.div>
     </motion.div>
-  )
+  );
 }
