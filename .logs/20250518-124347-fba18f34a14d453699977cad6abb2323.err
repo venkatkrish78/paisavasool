@@ -1,0 +1,32 @@
+
+
+===== TS errors =====
+
+[Test Mode] ./components/shopping-list-items.tsx:186:16
+Type error: Cannot find name 'Plus'.
+
+[0m [90m 184 |[39m             [33m<[39m[33mp[39m className[33m=[39m[32m"mb-4"[39m[33m>[39m[33mNo[39m items [36min[39m [36mthis[39m shopping list yet[33m.[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m[0m
+[0m [90m 185 |[39m             [33m<[39m[33mButton[39m onClick[33m=[39m{() [33m=>[39m router[33m.[39mpush([32m`/dashboard/lists/${listId}/add-item`[39m)}[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 186 |[39m               [33m<[39m[33mPlus[39m className[33m=[39m[32m"mr-2 h-4 w-4"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 187 |[39m               [33mAdd[39m [33mYour[39m [33mFirst[39m [33mItem[39m[0m
+[0m [90m 188 |[39m             [33m<[39m[33m/[39m[33mButton[39m[33m>[39m[0m
+[0m [90m 189 |[39m           [33m<[39m[33m/[39m[33mCardContent[39m[33m>[39m[0m
+
+===== TS errors =====
+
+
+Failed to compile.
+
+./components/shopping-list-items.tsx:186:16
+Type error: Cannot find name 'Plus'.
+
+[0m [90m 184 |[39m             [33m<[39m[33mp[39m className[33m=[39m[32m"mb-4"[39m[33m>[39m[33mNo[39m items [36min[39m [36mthis[39m shopping list yet[33m.[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m[0m
+[0m [90m 185 |[39m             [33m<[39m[33mButton[39m onClick[33m=[39m{() [33m=>[39m router[33m.[39mpush([32m`/dashboard/lists/${listId}/add-item`[39m)}[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 186 |[39m               [33m<[39m[33mPlus[39m className[33m=[39m[32m"mr-2 h-4 w-4"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 187 |[39m               [33mAdd[39m [33mYour[39m [33mFirst[39m [33mItem[39m[0m
+[0m [90m 188 |[39m             [33m<[39m[33m/[39m[33mButton[39m[33m>[39m[0m
+[0m [90m 189 |[39m           [33m<[39m[33m/[39m[33mCardContent[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+error Command failed with exit code 1.

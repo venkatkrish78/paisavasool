@@ -1,0 +1,15 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "f76f9f866", schema "public" at "db-f76f9f866.db001.hosteddb.reai.io:5432"
+
+1 migration found in prisma/migrations
+
+Applying migration `20250518124337_1d894971`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20250518124337_1d894971/
+    └─ migration.sql
+      
+All migrations have been successfully applied.

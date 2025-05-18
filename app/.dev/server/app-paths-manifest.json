@@ -1,0 +1,11 @@
+{
+  "/page": "app/page.js",
+  "/api/shopping-lists/route": "app/api/shopping-lists/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/lists/[id]/page": "app/dashboard/lists/[id]/page.js",
+  "/dashboard/lists/new/page": "app/dashboard/lists/new/page.js",
+  "/api/shopping-lists/[id]/items/route": "app/api/shopping-lists/[id]/items/route.js",
+  "/dashboard/lists/[id]/add-item/page": "app/dashboard/lists/[id]/add-item/page.js",
+  "/api/platforms/route": "app/api/platforms/route.js",
+  "/dashboard/lists/[id]/compare/page": "app/dashboard/lists/[id]/compare/page.js"
+}

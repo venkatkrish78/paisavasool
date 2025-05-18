@@ -1,0 +1,1 @@
+{"version":1,"functions":{"/api/platforms":{},"/api/shopping-lists/[id]/items/[itemId]":{},"/api/shopping-lists/[id]/refresh-prices":{},"/api/shopping-lists/[id]":{},"/api/shopping-lists/[id]/items":{},"/api/shopping-lists":{},"/dashboard/lists/[id]/add-item":{},"/dashboard/lists/[id]/compare":{},"/dashboard/lists/[id]/edit":{},"/dashboard/lists/[id]":{}}}

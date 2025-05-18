@@ -1,0 +1,7 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "1669d29e4", schema "public" at "db-1669d29e4.db001.hosteddb.reai.io:5432"
+
+Prisma Migrate created the following migration without applying it 20250518124337_1d894971
+
+You can now edit it and apply it by running prisma migrate dev.
